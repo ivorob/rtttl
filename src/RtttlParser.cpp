@@ -1,5 +1,5 @@
 #include <string.h>
-#include <cctype>
+#include <ctype.h>
 #include <new.h>
 #include "RtttlParser.h"
 
@@ -55,17 +55,22 @@ SimpleAudio::RtttlParser::getNote(int index) const
         return this->pause;
     }
 
-    return this->notes[index];
+    return *this->notes[index];
 }
 
 bool
 SimpleAudio::RtttlParser::parseSong(const char *song)
 {
     int position = 0;
-    return parseName(song, position) &&
-           parseSettings(song, position) && 
-           parseNotes(song, position) &&
-           position != -1;
+    bool result = parseName(song, position) &&
+        parseSettings(song, position) && 
+        parseNotes(song, position) &&
+        position != -1;
+    if (!result) {
+        //TODO: free data
+    }
+
+    return result;
 }
 
 void
@@ -196,7 +201,6 @@ SimpleAudio::RtttlParser::parseSettings(const char *song, int& position)
     return false;
 }
 
-#include <iostream>
 bool
 SimpleAudio::RtttlParser::addNote(int index, int noteDuration, const char *note, int noteOctave)
 {
@@ -205,7 +209,7 @@ SimpleAudio::RtttlParser::addNote(int index, int noteDuration, const char *note,
     }
 
     int toneIndex = 0;
-    switch (note[0] ^ 0x20) {
+    switch ((note[0] | 0x20)) {
         case 'c':
             /* passthru */
         case 'd':
@@ -215,12 +219,12 @@ SimpleAudio::RtttlParser::addNote(int index, int noteDuration, const char *note,
         case 'f':
             /* passthru */
         case 'g':
-            toneIndex = ((note[0] ^ 0x20) - 'c') * 2;
+            toneIndex = ((note[0] | 0x20) - 'c') * 2;
             break;
         case 'a':
             /* passthru */
         case 'b':
-            toneIndex = (note[0] ^ 0x20) - 'a' + 5 /* note before */ * 2 /* +# */;
+            toneIndex = (note[0] | 0x20) - 'a' + 5 /* note before */ * 2 /* +# */;
             break;
         case 'p':
             toneIndex = -1;
@@ -233,14 +237,13 @@ SimpleAudio::RtttlParser::addNote(int index, int noteDuration, const char *note,
         ++toneIndex;
     }
 
-    new (&this->notes[index]) SimpleAudio::Note(toneIndex,
+    this->notes[index] = new SimpleAudio::Note(toneIndex,
             isDurationValid(noteDuration) ? noteDuration : getDefaultDuration(),
             isOctaveValid(noteOctave) ? noteOctave : getDefaultOctave());
 
     return true;
 }
 
-#include <iostream>
 int
 SimpleAudio::RtttlParser::fillNotes(const char *song, int& position)
 {
@@ -316,7 +319,7 @@ SimpleAudio::RtttlParser::parseNotes(const char *song, int& position)
         int currentPosition = position;
         this->notesCount = fillNotes(song, currentPosition);
         if (this->notesCount != 0) {
-            this->notes = new Note[this->notesCount];
+            this->notes = new Note*[this->notesCount];
             this->notesCount = fillNotes(song, position);
             return this->notesCount != 0;
         }

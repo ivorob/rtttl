@@ -44,3 +44,18 @@ TEST(RtttlParserTest, Parse)
     ASSERT_EQ(SimpleAudio::Duration::HALF, parser.getNote(4).getDuration());
     ASSERT_EQ(622, parser.getNote(4).getFrequency());
 }
+
+TEST(RtttlParserTest, AnotherSongParse)
+{
+    SimpleAudio::RtttlParser parser;
+    ASSERT_TRUE(parser.parseSong("MissionImp:d=16,o=8,b=95:32d,32d#,32d,32d#,32d,32d#,32d,32d#,32d,32d,32d#,32e,32f,32f#,32g,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,a#,g,2d,32p,a#,g,2c#,32p,a#,g,2c,a#5,8c,2p,32p,a#5,g5,2f#,32p,a#5,g5,2f,32p,a#5,g5,2e,d#,8d"));
+
+    ASSERT_TRUE(parser.getName() != nullptr);
+    ASSERT_TRUE(!strcmp("MissionImp", parser.getName()));
+
+    ASSERT_EQ(SimpleAudio::Duration::SIXTEENTH, parser.getDefaultDuration());
+    ASSERT_EQ(SimpleAudio::Octave::OCTAVE_4, parser.getDefaultOctave());
+    ASSERT_EQ(95, parser.getDefaultTempo());
+
+    ASSERT_TRUE(parser.getNotesCount() != 0);
+}

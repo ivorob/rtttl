@@ -40,7 +40,7 @@ private:
     Octave octave;
     int tempo;
     int notesCount;
-    Note *notes;
+    Note **notes;
     Note pause;
 };
 
