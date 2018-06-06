@@ -35,6 +35,8 @@ private:
     bool isDurationValid(int duration) const;
     bool isOctaveValid(int octave) const;
 private:
+    void freeResources();
+private:
     char *name;
     Duration duration;
     Octave octave;

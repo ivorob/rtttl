@@ -13,9 +13,29 @@ SimpleAudio::RtttlParser::RtttlParser()
 {
 }
 
+void
+SimpleAudio::RtttlParser::freeResources()
+{
+    if (this->name != nullptr) {
+        delete[] this->name;
+    }
+    
+    if (this->notes != nullptr) {
+        for (int i = 0; i < this->notesCount; ++i) {
+            delete this->notes[i];
+        }
+
+        delete[] this->notes;
+    }
+
+    this->name = nullptr;
+    this->notesCount = 0;
+    this->notes = nullptr;
+}
+
 SimpleAudio::RtttlParser::~RtttlParser()
 {
-    delete[] this->name;
+    freeResources();
 }
 
 const char *
@@ -67,7 +87,7 @@ SimpleAudio::RtttlParser::parseSong(const char *song)
         parseNotes(song, position) &&
         position != -1;
     if (!result) {
-        //TODO: free data
+        freeResources();
     }
 
     return result;
