@@ -1,6 +1,6 @@
 # rtttl library
 
-Version 0.2.0
+Version 0.3.0
 ------------------------
 
 Small Arduino library which allows to play rtttl ringtones using speaker.
