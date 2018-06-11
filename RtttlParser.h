@@ -29,7 +29,7 @@ private:
     int fillNotes(const char *song, int& position);
 private:
     void updateName(char *name);
-    bool addNote(int index, int noteDuration, const char *note, int noteOctave);
+    bool addNote(int index, int noteDuration, const char *note, int noteOctave, int dotsCount);
     bool setSettingValue(char key, int value);
 private:
     bool isDurationValid(int duration) const;

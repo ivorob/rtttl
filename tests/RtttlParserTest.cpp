@@ -29,19 +29,19 @@ TEST(RtttlParserTest, Parse)
 
     ASSERT_EQ(5, parser.getNotesCount());
 
-    ASSERT_EQ(SimpleAudio::Duration::EIGHTH, parser.getNote(0).getDuration());
+    ASSERT_EQ(30000, parser.getNote(0).getDuration());
     ASSERT_EQ(0, parser.getNote(0).getFrequency());
 
-    ASSERT_EQ(SimpleAudio::Duration::EIGHTH, parser.getNote(1).getDuration());
+    ASSERT_EQ(30000, parser.getNote(1).getDuration());
     ASSERT_EQ(784, parser.getNote(1).getFrequency());
 
-    ASSERT_EQ(SimpleAudio::Duration::EIGHTH, parser.getNote(2).getDuration());
+    ASSERT_EQ(30000, parser.getNote(2).getDuration());
     ASSERT_EQ(784, parser.getNote(2).getFrequency());
 
-    ASSERT_EQ(SimpleAudio::Duration::EIGHTH, parser.getNote(3).getDuration());
+    ASSERT_EQ(30000, parser.getNote(3).getDuration());
     ASSERT_EQ(784, parser.getNote(3).getFrequency());
 
-    ASSERT_EQ(SimpleAudio::Duration::HALF, parser.getNote(4).getDuration());
+    ASSERT_EQ(120000, parser.getNote(4).getDuration());
     ASSERT_EQ(622, parser.getNote(4).getFrequency());
 
     ASSERT_FALSE(parser.parseSong("fifth:d=4,o=5,b=63:8k,8a1"));

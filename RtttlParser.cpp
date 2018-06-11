@@ -224,7 +224,7 @@ SimpleAudio::RtttlParser::parseSettings(const char *song, int& position)
 }
 
 bool
-SimpleAudio::RtttlParser::addNote(int index, int noteDuration, const char *note, int noteOctave)
+SimpleAudio::RtttlParser::addNote(int index, int noteDuration, const char *note, int noteOctave, int dotsCount)
 {
     if (this->notes == nullptr || index >= this->notesCount) {
         return true;
@@ -262,7 +262,8 @@ SimpleAudio::RtttlParser::addNote(int index, int noteDuration, const char *note,
 
     this->notes[index] = new SimpleAudio::Note(toneIndex,
             isDurationValid(noteDuration) ? noteDuration : getDefaultDuration(),
-            isOctaveValid(noteOctave) ? noteOctave : getDefaultOctave());
+            isOctaveValid(noteOctave) ? noteOctave : getDefaultOctave(),
+            dotsCount);
 
     return true;
 }
@@ -276,6 +277,7 @@ SimpleAudio::RtttlParser::fillNotes(const char *song, int& position)
     int noteOctave = 0;
     int notePosition = -1;
     int endNotePosition = -1;
+    int dotsCount = 0;
     char note[3];
     while (song[position] != 0) {
         if (song[position] == 0x20 || song[position] == '\t') {
@@ -301,6 +303,8 @@ SimpleAudio::RtttlParser::fillNotes(const char *song, int& position)
             if (endNotePosition == -1) {
                 endNotePosition = position;
             }
+
+            ++dotsCount;
         } else if (song[position] != ',') {
             if (notePosition == -1) {
                 notePosition = position;
@@ -313,7 +317,7 @@ SimpleAudio::RtttlParser::fillNotes(const char *song, int& position)
             memcpy(note, &song[notePosition], endNotePosition - notePosition);
             note[endNotePosition - notePosition] = 0;
 
-            if (!addNote(count, noteDuration, note, noteOctave)) {
+            if (!addNote(count, noteDuration, note, noteOctave, dotsCount)) {
                 break;
             }
 
@@ -323,6 +327,7 @@ SimpleAudio::RtttlParser::fillNotes(const char *song, int& position)
             noteOctave = 0;
             notePosition = -1;
             endNotePosition = -1;
+            dotsCount = 0;
             note[0] = 0;
         } else {
             break;
@@ -341,7 +346,7 @@ SimpleAudio::RtttlParser::fillNotes(const char *song, int& position)
             note[endNotePosition - notePosition] = 0;
         }
 
-        addNote(count, noteDuration, note, noteOctave);
+        addNote(count, noteDuration, note, noteOctave, dotsCount);
 
         ++count;
     }

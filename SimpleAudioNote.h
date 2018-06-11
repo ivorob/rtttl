@@ -7,13 +7,15 @@ namespace SimpleAudio {
 class Note {
 public:
     Note();
-    Note(int toneIndex, int noteDuration, int noteOctave);
+    Note(int toneIndex, int noteDuration, int noteOctave, int dotsCount = 0);
 
-    Duration getDuration() const;
-    int getFrequency() const;
+    unsigned long getDuration() const;
+    unsigned int getFrequency() const;
 private:
-    int frequency;
-    Duration duration;
+    unsigned long calculateDuration(int duration, int dotsCount) const;
+private:
+    unsigned int frequency;
+    unsigned long duration;
 };
 
 }

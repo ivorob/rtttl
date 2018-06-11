@@ -39,7 +39,7 @@ void loop() {
     for (int i = 0; i < parser.getNotesCount(); ++i) {
       const SimpleAudio::Note& note = parser.getNote(i);
 
-      int duration = (60 * 1000L / parser.getDefaultTempo()) * 4 / note.getDuration();
+      unsigned long duration = note.getDuration() / parser.getDefaultTempo();
       Serial.print("Frequency: ");
       Serial.print(note.getFrequency());
       Serial.print(" Duration: ");

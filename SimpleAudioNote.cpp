@@ -65,7 +65,7 @@ enum {
     NOTE_B8     = 7902,
 } NoteFrequency;
 
-int notes[] = {
+unsigned int notes[] = {
     NOTE_C4, NOTE_CS4, NOTE_D4, NOTE_DS4, NOTE_E4, NOTE_F4, NOTE_FS4, NOTE_G4, NOTE_GS4, NOTE_A4, NOTE_AS4, NOTE_B4,
     NOTE_C5, NOTE_CS5, NOTE_D5, NOTE_DS5, NOTE_E5, NOTE_F5, NOTE_FS5, NOTE_G5, NOTE_GS5, NOTE_A5, NOTE_AS5, NOTE_B5,
     NOTE_C6, NOTE_CS6, NOTE_D6, NOTE_DS6, NOTE_E6, NOTE_F6, NOTE_FS6, NOTE_G6, NOTE_GS6, NOTE_A6, NOTE_AS6, NOTE_B6,
@@ -77,27 +77,44 @@ int notes[] = {
 
 SimpleAudio::Note::Note()
     : frequency(),
-      duration(Duration::WHOLE)
+      duration()
 {
+    this->duration = calculateDuration(Duration::WHOLE, 0);
 }
 
-SimpleAudio::Note::Note(int toneIndex, int noteDuration, int noteOctave)
-    : duration(static_cast<Duration>(noteDuration))
+SimpleAudio::Note::Note(int toneIndex, int noteDuration, int noteOctave, int dotsCount)
+    : frequency(),
+      duration()
 {
     if (toneIndex < 0) {
         this->frequency = 0;
     } else {
         this->frequency = notes[toneIndex + (noteOctave - Octave::OCTAVE_4) * 12];
     }
+
+    this->duration = calculateDuration(noteDuration, dotsCount);
 }
 
-SimpleAudio::Duration
+unsigned long
+SimpleAudio::Note::calculateDuration(int duration, int dotsCount) const
+{
+    unsigned long result = 60 * 1000L * 4 / duration;
+
+    unsigned long pow = 1 << dotsCount;
+    if (pow != 1) {
+        result = result * (2 * pow - 1) / pow;
+    }
+
+    return result;
+}
+
+unsigned long
 SimpleAudio::Note::getDuration() const
 {
     return this->duration;
 }
 
-int
+unsigned int
 SimpleAudio::Note::getFrequency() const
 {
     return this->frequency;
