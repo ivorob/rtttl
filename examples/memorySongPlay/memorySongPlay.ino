@@ -4,7 +4,7 @@
 
 SimpleAudio::RtttlParser parser;
 
-char *song = "MissionImp:d=16,o=8,b=95:32d,32d#,32d,32d#,32d,32d#,32d,32d#,32d,32d,32d#,32e,32f,32f#,32g,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,a#,g,2d,32p,a#,g,2c#,32p,a#,g,2c,a#5,8c,2p,32p,a#5,g5,2f#,32p,a#5,g5,2f,32p,a#5,g5,2e,d#,8d";
+char *song = "StarWars:d=4,o=5,b=45:32p,32f#,32f#,32f#,8b.,8f#.6,32e6,32d#6,32c#6,8b.6,16f#.6,32e6,32d#6,32c#6,8b.6,16f#.6,32e6,32d#6,32e6,8c#.6,32f#,32f#,32f#,8b.,8f#.6,32e6,32d#6,32c#6,8b.6,16f#.6,32e6,32d#6,32c#6,8b.6,16f#.6,32e6,32d#6,32e6,8c#6";
 
 void setup() {
   Serial.begin(9600);
@@ -34,22 +34,25 @@ void loop() {
     Serial.print("Song has ");
     Serial.print(parser.getNotesCount());
     Serial.println(" notes");
-    Serial.println("NOTES:");
+    Serial.println("Plaing...");
 
     for (int i = 0; i < parser.getNotesCount(); ++i) {
       const SimpleAudio::Note& note = parser.getNote(i);
 
       int duration = (60 * 1000L / parser.getDefaultTempo()) * 4 / note.getDuration();
       Serial.print("Frequency: ");
-      Serial.println(note.getFrequency());
-      Serial.print("Note duration: ");
+      Serial.print(note.getFrequency());
+      Serial.print(" Duration: ");
       Serial.println(duration);
       tone(TONE_PIN, note.getFrequency());
       delay(duration);
     }
+    noTone(TONE_PIN);
 
-    Serial.println(" ");
+    Serial.println("Stop.");
   }
     
-  delay(10000);
+  while (1) {
+      delay(1000);
+  }
 }
