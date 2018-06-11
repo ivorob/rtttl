@@ -16,6 +16,8 @@ typedef enum {
     OCTAVE_5 = 5,
     OCTAVE_6 = 6,
     OCTAVE_7 = 7,
+    OCTAVE_8 = 8,
+    OCTAVE_MAX,
 } Octave;
 
 }
