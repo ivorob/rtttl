@@ -31,6 +31,9 @@ SimpleAudio::RtttlParser::freeResources()
     this->name = nullptr;
     this->notesCount = 0;
     this->notes = nullptr;
+    this->duration = Duration::WHOLE;
+    this->octave = Octave::OCTAVE_4;
+    this->tempo = 100;
 }
 
 SimpleAudio::RtttlParser::~RtttlParser()
@@ -81,6 +84,8 @@ SimpleAudio::RtttlParser::getNote(int index) const
 bool
 SimpleAudio::RtttlParser::parseSong(const char *song)
 {
+    freeResources();
+
     int position = 0;
     bool result = parseName(song, position) &&
         parseSettings(song, position) && 

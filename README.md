@@ -1,6 +1,6 @@
 # rtttl library
 
-Version 0.3.0
+Version 0.4.0
 ------------------------
 
 Small Arduino library which allows to play rtttl ringtones using speaker.
@@ -8,5 +8,4 @@ Small Arduino library which allows to play rtttl ringtones using speaker.
 RTTL - [Ring Tone Transfer Language] (https://en.wikipedia.org/wiki/Ring_Tone_Transfer_Language)
 
 TODO:
-* Add rtttl played
-* Add main rtttl readers (arrays reader, SD reader, etc.)
+* Parse in runtime
