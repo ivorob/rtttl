@@ -17,19 +17,15 @@ public:
     Octave getDefaultOctave() const;
     uint8_t getDefaultTempo() const;
 
-    int getNotesCount() const;
-    const Note& getNote(int index) const;
+    Note parseNextNote();
 
     bool parseSong(const char *song);
 private:
     bool parseName(const char *song, int& position);
     bool parseSettings(const char *song, int& position);
-    bool parseNotes(const char *song, int& position);
-
-    int fillNotes(const char *song, int& position);
 private:
     void updateName(char *name);
-    bool addNote(int index, int noteDuration, const char *note, int noteOctave, int dotsCount);
+    Note obtainNote(int noteDuration, const char *note, int noteOctave, int dotsCount);
     bool setSettingValue(char key, int value);
 private:
     bool isDurationValid(int duration) const;
@@ -41,9 +37,8 @@ private:
     Duration duration;
     Octave octave;
     int tempo;
-    int notesCount;
-    Note **notes;
-    Note pause;
+    int position;
+    const char *song;
 };
 
 }

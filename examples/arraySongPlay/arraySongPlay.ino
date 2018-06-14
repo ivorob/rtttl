@@ -48,6 +48,7 @@ SimpleAudio::RtttlPlayer player(TONE_PIN, reader);
 
 void setup() {
     pinMode(TONE_PIN, OUTPUT);  
+
     Serial.begin(9600);
     Serial.print("Songs count: ");
     Serial.println(sizeof(songs) / sizeof(char *));
@@ -58,8 +59,7 @@ void loop() {
 
     Serial.print("Playing ");
     Serial.println(player.getSongName());
-    while (!player.eof()) {         // Do we have notes to play?
-        player.play();              // Play note
+    while (player.play()) {         // Play note
     }  
 
     Serial.println("Pause.");

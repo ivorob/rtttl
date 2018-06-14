@@ -3,55 +3,44 @@
 
 SimpleAudio::RtttlPlayer::RtttlPlayer(int outputPin, AbstractRtttlSongReader& reader)
     : reader(reader),
-      currentNote(),
       outputPin(outputPin)
 {
 }
 
 bool
-SimpleAudio::RtttlPlayer::eof() const
-{
-    return this->currentNote >= this->parser.getNotesCount();
-}
-
-void
 SimpleAudio::RtttlPlayer::play()
 {
-    if (this->currentNote < this->parser.getNotesCount()) {
-        const SimpleAudio::Note& note = this->parser.getNote(this->currentNote);
-
+    const SimpleAudio::Note& note = this->parser.parseNextNote();
+    if (note.isValid()) {
         unsigned long duration = note.getDuration() / this->parser.getDefaultTempo();
-        
+
         if (note.getFrequency() != 0) {
-            tone(this->outputPin, note.getFrequency());
+            tone(this->outputPin, note.getFrequency(), duration);
         }
 
         delay(duration);
+        noTone(this->outputPin);
+        return true;
     }
 
-    noTone(this->outputPin);
-
-    ++this->currentNote;
+    return false;
 }
 
 void
 SimpleAudio::RtttlPlayer::stepNext()
 {
     this->parser.parseSong(reader.nextSong());
-    this->currentNote = 0;
 }
 
 void
 SimpleAudio::RtttlPlayer::stepPrev()
 {
     this->parser.parseSong(reader.prevSong());
-    this->currentNote = 0;
 }
 
 void
 SimpleAudio::RtttlPlayer::reset()
 {
-    this->currentNote = 0;
 }
 
 const char *

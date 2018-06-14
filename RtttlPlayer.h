@@ -9,9 +9,7 @@ class RtttlPlayer {
 public:
     RtttlPlayer(int outputPin, AbstractRtttlSongReader& reader);
 
-    bool eof() const;
-
-    void play();
+    bool play();
     void reset();
 
     void stepNext();
@@ -21,7 +19,6 @@ public:
 private:
     AbstractRtttlSongReader& reader;
     RtttlParser parser;
-    int currentNote;
     int outputPin;
 };
 

@@ -77,14 +77,16 @@ unsigned int notes[] = {
 
 SimpleAudio::Note::Note()
     : frequency(),
-      duration()
+      duration(),
+      valid(false)
 {
     this->duration = calculateDuration(Duration::WHOLE, 0);
 }
 
 SimpleAudio::Note::Note(int toneIndex, int noteDuration, int noteOctave, int dotsCount)
     : frequency(),
-      duration()
+      duration(),
+      valid(true)
 {
     if (toneIndex < 0) {
         this->frequency = 0;
@@ -118,4 +120,10 @@ unsigned int
 SimpleAudio::Note::getFrequency() const
 {
     return this->frequency;
+}
+
+bool
+SimpleAudio::Note::isValid() const
+{
+    return this->valid;
 }

@@ -7,18 +7,19 @@ SimpleAudio::RtttlParser parser;
 char *song = "StarWars:d=4,o=5,b=45:32p,32f#,32f#,32f#,8b.,8f#.6,32e6,32d#6,32c#6,8b.6,16f#.6,32e6,32d#6,32c#6,8b.6,16f#.6,32e6,32d#6,32e6,8c#.6,32f#,32f#,32f#,8b.,8f#.6,32e6,32d#6,32c#6,8b.6,16f#.6,32e6,32d#6,32c#6,8b.6,16f#.6,32e6,32d#6,32e6,8c#6";
 
 void setup() {
-  Serial.begin(9600);
+    pinMode(TONE_PIN, OUTPUT);
 
-  Serial.print("Parsing song...\t");
-  if (parser.parseSong(song)) {
-    Serial.println("OK");
-  } else {
-    Serial.println("ERROR"); 
-  }
+    Serial.begin(9600);
+
+    Serial.print("Parsing song...\t");
+    if (parser.parseSong(song)) {
+        Serial.println("OK");
+    } else {
+        Serial.println("ERROR"); 
+    }
 }
 
 void loop() {
-  if (parser.getNotesCount() != 0) {
     Serial.print("Play: ");
     Serial.println(parser.getName());
   
@@ -31,28 +32,28 @@ void loop() {
     Serial.print("Default tempo: ");
     Serial.println(parser.getDefaultTempo());
 
-    Serial.print("Song has ");
-    Serial.print(parser.getNotesCount());
-    Serial.println(" notes");
     Serial.println("Plaing...");
 
-    for (int i = 0; i < parser.getNotesCount(); ++i) {
-      const SimpleAudio::Note& note = parser.getNote(i);
+    while (1) {
+      const SimpleAudio::Note& note = parser.parseNextNote();
+      if (note.isValid()) {
+          unsigned long duration = note.getDuration() / parser.getDefaultTempo();
+          Serial.print("Frequency: ");
+          Serial.print(note.getFrequency());
+          Serial.print(" Duration: ");
+          Serial.println(duration);
+          tone(TONE_PIN, note.getFrequency());
+          delay(duration);
+        } else {
+            break;
+        }
 
-      unsigned long duration = note.getDuration() / parser.getDefaultTempo();
-      Serial.print("Frequency: ");
-      Serial.print(note.getFrequency());
-      Serial.print(" Duration: ");
-      Serial.println(duration);
-      tone(TONE_PIN, note.getFrequency());
-      delay(duration);
+        noTone(TONE_PIN);
     }
-    noTone(TONE_PIN);
 
     Serial.println("Stop.");
-  }
     
-  while (1) {
-      delay(1000);
-  }
+    while (1) {
+        delay(1000);
+    }
 }

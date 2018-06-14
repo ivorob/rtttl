@@ -8,8 +8,8 @@ SimpleAudio::RtttlParser::RtttlParser()
       duration(Duration::WHOLE),
       octave(Octave::OCTAVE_4),
       tempo(100),
-      notesCount(),
-      notes()
+      song(),
+      position(-1)
 {
 }
 
@@ -20,20 +20,12 @@ SimpleAudio::RtttlParser::freeResources()
         delete[] this->name;
     }
     
-    if (this->notes != nullptr) {
-        for (int i = 0; i < this->notesCount; ++i) {
-            delete this->notes[i];
-        }
-
-        delete[] this->notes;
-    }
-
     this->name = nullptr;
-    this->notesCount = 0;
-    this->notes = nullptr;
     this->duration = Duration::WHOLE;
     this->octave = Octave::OCTAVE_4;
     this->tempo = 100;
+    this->song = nullptr;
+    this->position = -1;
 }
 
 SimpleAudio::RtttlParser::~RtttlParser()
@@ -65,31 +57,19 @@ SimpleAudio::RtttlParser::getDefaultTempo() const
     return this->tempo;
 }
 
-int
-SimpleAudio::RtttlParser::getNotesCount() const
-{
-    return this->notesCount;
-}
-
-const SimpleAudio::Note&
-SimpleAudio::RtttlParser::getNote(int index) const
-{
-    if (index < 0 || index > getNotesCount() || this->notes == nullptr) {
-        return this->pause;
-    }
-
-    return *this->notes[index];
-}
-
 bool
 SimpleAudio::RtttlParser::parseSong(const char *song)
 {
+    if (song == nullptr) {
+        return false;
+    }
+
     freeResources();
 
-    int position = 0;
+    this->position = 0;
+    this->song = song;
     bool result = parseName(song, position) &&
-        parseSettings(song, position) && 
-        parseNotes(song, position) &&
+        parseSettings(song, position) &&
         position != -1;
     if (!result) {
         freeResources();
@@ -228,13 +208,9 @@ SimpleAudio::RtttlParser::parseSettings(const char *song, int& position)
     return false;
 }
 
-bool
-SimpleAudio::RtttlParser::addNote(int index, int noteDuration, const char *note, int noteOctave, int dotsCount)
+SimpleAudio::Note
+SimpleAudio::RtttlParser::obtainNote(int noteDuration, const char *note, int noteOctave, int dotsCount)
 {
-    if (this->notes == nullptr || index >= this->notesCount) {
-        return true;
-    }
-
     int toneIndex = 0;
     switch ((note[0] | 0x20)) {
         case 'f':
@@ -258,119 +234,92 @@ SimpleAudio::RtttlParser::addNote(int index, int noteDuration, const char *note,
             toneIndex = -1;
             break;
         default:
-            return false;
+            return SimpleAudio::Note();
     }
 
     if (note[0] != 'P' && note[1] == '#') {
         ++toneIndex;
     }
 
-    this->notes[index] = new SimpleAudio::Note(toneIndex,
-            isDurationValid(noteDuration) ? noteDuration : getDefaultDuration(),
-            isOctaveValid(noteOctave) ? noteOctave : getDefaultOctave(),
-            dotsCount);
-
-    return true;
+    return SimpleAudio::Note(toneIndex,
+        isDurationValid(noteDuration) ? noteDuration : getDefaultDuration(),
+        isOctaveValid(noteOctave) ? noteOctave : getDefaultOctave(),
+        dotsCount);
 }
 
-int
-SimpleAudio::RtttlParser::fillNotes(const char *song, int& position)
+SimpleAudio::Note
+SimpleAudio::RtttlParser::parseNextNote()
 {
-    int count = 0;
+    if (this->song == nullptr || this->position == -1) {
+        return SimpleAudio::Note();
+    }
 
     int noteDuration = 0;
     int noteOctave = 0;
     int notePosition = -1;
     int endNotePosition = -1;
     int dotsCount = 0;
-    char note[3];
-    while (song[position] != 0) {
-        if (song[position] == 0x20 || song[position] == '\t') {
-            ++position;
+    char note[3] = {0};
+    while (this->song[this->position] != 0) {
+        if (this->song[this->position] == 0x20 || this->song[this->position] == '\t') {
+            ++this->position;
             continue;
         }
 
-        if (isdigit(song[position])) {
+        if (isdigit(this->song[this->position])) {
             if (notePosition == -1) {
                 noteDuration *= 10;
-                noteDuration += song[position] - '0';
+                noteDuration += this->song[this->position] - '0';
             } else if (noteOctave == 0) {
                 if (endNotePosition == -1) {
-                    endNotePosition = position;
+                    endNotePosition = this->position;
                 }
 
-                noteOctave += song[position] - '0';
+                noteOctave += this->song[this->position] - '0';
             } else {
                 noteOctave *= 10;
-                noteOctave += song[position] - '0';
+                noteOctave += this->song[this->position] - '0';
             }
-        } else if (song[position] == '.' && notePosition != -1) {
+        } else if (this->song[this->position] == '.' && notePosition != -1) {
             if (endNotePosition == -1) {
-                endNotePosition = position;
+                endNotePosition = this->position;
             }
 
             ++dotsCount;
-        } else if (song[position] != ',') {
+        } else if (this->song[this->position] != ',') {
             if (notePosition == -1) {
-                notePosition = position;
+                notePosition = this->position;
             }
         } else if (notePosition != -1) {
             if (endNotePosition == -1) {
-                endNotePosition = position;
+                endNotePosition = this->position;
             }
 
-            memcpy(note, &song[notePosition], endNotePosition - notePosition);
+            memcpy(note, &this->song[notePosition], endNotePosition - notePosition);
             note[endNotePosition - notePosition] = 0;
 
-            if (!addNote(count, noteDuration, note, noteOctave, dotsCount)) {
-                break;
-            }
-
-            ++count;
-
-            noteDuration = 0;
-            noteOctave = 0;
-            notePosition = -1;
-            endNotePosition = -1;
-            dotsCount = 0;
-            note[0] = 0;
+            ++this->position;
+            return obtainNote(noteDuration, note, noteOctave, dotsCount);
         } else {
             break;
         }
 
-        ++position;
+        ++this->position;
     }
 
-    if (song[position] == 0 && notePosition != -1) {
+    if (this->song[this->position] == 0 && notePosition != -1) {
         if (note[0] == 0) {
             if (endNotePosition == -1) {
-                endNotePosition = position;
+                endNotePosition = this->position;
             }
 
-            memcpy(note, &song[notePosition], endNotePosition - notePosition);
+            memcpy(note, &this->song[notePosition], endNotePosition - notePosition);
             note[endNotePosition - notePosition] = 0;
         }
 
-        addNote(count, noteDuration, note, noteOctave, dotsCount);
-
-        ++count;
+        this->position = -1;
+        return obtainNote(noteDuration, note, noteOctave, dotsCount);
     }
 
-    return count;
-}
-
-bool
-SimpleAudio::RtttlParser::parseNotes(const char *song, int& position)
-{
-    if (position != -1) {
-        int currentPosition = position;
-        this->notesCount = fillNotes(song, currentPosition);
-        if (this->notesCount != 0) {
-            this->notes = new Note*[this->notesCount];
-            this->notesCount = fillNotes(song, position);
-            return this->notesCount != 0;
-        }
-    }
-
-    return false;
+    return SimpleAudio::Note();
 }
